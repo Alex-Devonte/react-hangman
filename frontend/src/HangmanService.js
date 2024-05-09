@@ -1,9 +1,8 @@
+import axios from "axios";
+
 const getCategories = async () => {
-  const response = await [
-    { topic: "Sports", categories: ["NFL Teams", "NBA Teams"] },
-    { topic: "Fruit", categories: ["Apple", "Strawberry"] },
-  ];
-  return response;
+  const response = await axios.get("http://localhost:3000/");
+  return response.data;
 };
 
 const HangmanService = { getCategories };
