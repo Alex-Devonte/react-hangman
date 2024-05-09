@@ -11,11 +11,41 @@ const pool = mysql
   })
   .promise();
 
-async function getTopicsAndCategories() {
-  const [rows] = await pool.query(
-    "SELECT topic, category FROM topics INNER JOIN categories on topics.id = categories.topic_id",
-  );
+async function getTopics() {
+  const [rows] = await pool.query("SELECT DISTINCT topic FROM topics");
   return rows;
+}
+
+async function getCategories(topics) {
+  const categoryData = [];
+
+  await Promise.all(
+    topics.map(async (row) => {
+      const [rows] = await pool.query(
+        "SELECT category FROM categories WHERE topic_id = (SELECT id FROM topics WHERE topic = ?)",
+        [row.topic],
+      );
+
+      //Extract the categories from the object
+      const categories = rows.map((row) => row.category);
+
+      //Create new object for data array
+      const newObj = {
+        topic: row.topic,
+        categories: categories,
+      };
+
+      categoryData.push(newObj);
+    }),
+  );
+
+  return categoryData;
+}
+
+async function getTopicsAndCategories() {
+  const topics = await getTopics();
+  const data = await getCategories(topics);
+  return data;
 }
 
 export const db = { getTopicsAndCategories };
