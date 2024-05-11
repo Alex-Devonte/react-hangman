@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const getCategories = async () => {
-  const response = await axios.get("http://localhost:3000/");
+  const response = await axios.get("/hangman");
   return response.data;
 };
 
