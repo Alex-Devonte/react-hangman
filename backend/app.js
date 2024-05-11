@@ -18,7 +18,7 @@ app.use(cors());
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.get("/", async (req, res) => {
+app.get("/hangman/", async (req, res) => {
   const data = await db.getTopicsAndCategories();
   res.send(data);
 });
