@@ -23,6 +23,11 @@ app.get("/hangman/", async (req, res) => {
   res.send(data);
 });
 
+app.get("/hangman/words", async (req, res) => {
+  const data = await db.getWordFromCategory(req.query.category);
+  res.send(data);
+});
+
 // error handler
 app.use(function (err, req, res, next) {
   // set locals, only providing error in development
