@@ -5,5 +5,12 @@ const getCategories = async () => {
   return response.data;
 };
 
-const HangmanService = { getCategories };
+const getWordFromCategory = async (category) => {
+  const response = await axios.get("/hangman/words", {
+    params: { category: category },
+  });
+  return response.data;
+};
+
+const HangmanService = { getCategories, getWordFromCategory };
 export default HangmanService;
