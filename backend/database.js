@@ -48,4 +48,12 @@ async function getTopicsAndCategories() {
   return data;
 }
 
-export const db = { getTopicsAndCategories };
+async function getWordFromCategory(category) {
+  const [rows] = await pool.query(
+    "SELECT word FROM words INNER JOIN categories ON words.category_id = categories.id WHERE category = ? ORDER BY RAND() LIMIT 1;",
+    [category],
+  );
+  return rows[0].word;
+}
+
+export const db = { getTopicsAndCategories, getWordFromCategory };
