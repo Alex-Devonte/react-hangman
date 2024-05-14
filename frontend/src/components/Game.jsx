@@ -2,26 +2,35 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import HangmanService from "../HangmanService";
+import { useNavigate } from "react-router-dom";
 
 function Game() {
+  const defaultAttempts = 8;
+
   const [searchParams, setSearchParams] = useSearchParams();
   const [clickedLetters, setClickedLetters] = useState([]);
   const [word, setWord] = useState();
   const [dashes, setDashes] = useState([]);
+  const [attempts, setAttempts] = useState(defaultAttempts);
+  const [gameEnded, setGameEnded] = useState(false);
+  const [gameOverMsg, setGameOverMsg] = useState("");
 
   const topic = searchParams.get("topic");
   const category = searchParams.get("category");
+  const navigate = useNavigate();
+
+  //Fetch word from backend and set it to a state variable
+  const fetchWord = async () => {
+    try {
+      const wordData = await HangmanService.getWordFromCategory(category);
+      //Turn word into array of letters
+      setWord(wordData.toUpperCase().split(""));
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   useEffect(() => {
-    const fetchWord = async () => {
-      try {
-        const wordData = await HangmanService.getWordFromCategory(category);
-        //Turn word into array of letters
-        setWord(wordData.toUpperCase().split(""));
-      } catch (err) {
-        console.log(err);
-      }
-    };
     fetchWord();
   }, []);
 
@@ -34,7 +43,7 @@ function Game() {
         if (word[i] === " ") {
           dashArr.push(" ");
         } else {
-          dashArr.push("-");
+          dashArr.push("_");
         }
       }
     }
@@ -43,12 +52,17 @@ function Game() {
 
   //Check for game win/lose conditions
   useEffect(() => {
-    if (word) {
+    if (!gameEnded && word) {
+      if (attempts === 0) {
+        setGameEnded(true);
+        endGame(false);
+      }
       if (checkWin(dashes, word)) {
-        console.log("WIN");
+        setGameEnded(true);
+        endGame(true);
       }
     }
-  }, [dashes, word]);
+  }, [dashes, word, attempts, gameEnded]);
 
   const displayWordAsDashes = () => {
     return (
@@ -62,32 +76,6 @@ function Game() {
     );
   };
 
-  const checkLetter = (letter) => {
-    let updatedDashes = [...dashes];
-    for (let i = 0; i < word.length; i++) {
-      if (letter === word[i]) {
-        updatedDashes[i] = word[i];
-      }
-    }
-    setDashes(updatedDashes);
-  };
-
-  const checkWin = (dashes, word) => {
-    if (dashes.join("") === word.join("")) {
-      return true;
-    } else {
-      return false;
-    }
-  };
-
-  const handleClick = (letter) => {
-    //Add letter to clickedLetters array if it isn't there
-    if (!clickedLetters.includes(letter)) {
-      setClickedLetters([...clickedLetters, letter]);
-      checkLetter(letter);
-    }
-  };
-
   const displayKeyboard = () => {
     const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789"
       .toUpperCase()
@@ -99,7 +87,7 @@ function Game() {
           <div
             key={index}
             className={`flex w-10 cursor-pointer items-center justify-center rounded-md border border-sky-950 bg-sky-200 p-3 shadow-md transition duration-75 hover:bg-sky-100 md:w-auto md:p-5 ${
-              clickedLetters.includes(letter)
+              clickedLetters.includes(letter) || gameEnded
                 ? "cursor-default bg-sky-950 text-sky-50 line-through opacity-40 hover:bg-sky-950"
                 : ""
             }`}
@@ -112,6 +100,59 @@ function Game() {
     );
   };
 
+  const handleClick = (letter) => {
+    //Add letter to clickedLetters array if it isn't there
+    if (!gameEnded && !clickedLetters.includes(letter)) {
+      setClickedLetters([...clickedLetters, letter]);
+      checkLetter(letter);
+    }
+  };
+
+  const checkLetter = (letter) => {
+    let updatedDashes = [...dashes];
+    let match = false;
+
+    for (let i = 0; i < word.length; i++) {
+      if (letter === word[i]) {
+        updatedDashes[i] = word[i];
+        match = true;
+      }
+    }
+    //Update the dashes with letters if a match was found, otherwise subtract an attempt
+    if (match) {
+      setDashes(updatedDashes);
+    } else {
+      setAttempts(attempts - 1);
+    }
+  };
+
+  const checkWin = (dashes, word) => {
+    if (dashes.join("") === word.join("")) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const endGame = (gameWon) => {
+    setGameEnded(true);
+    if (gameWon) {
+      setGameOverMsg("Congrats! You win!");
+    } else {
+      setGameOverMsg("You lost");
+      //Show the completed word
+      setDashes(word);
+    }
+  };
+
+  const reset = () => {
+    setGameEnded(false);
+    setAttempts(defaultAttempts);
+    setClickedLetters([]);
+    setDashes([]);
+    fetchWord();
+  };
+
   if (!word) {
     return <p>Loading . . . </p>;
   }
@@ -120,8 +161,18 @@ function Game() {
     <div className="flex flex-col items-center">
       <h1>Topic: {topic}</h1>
       <h1>Category: {category}</h1>
+      <h1>Attempts Left: {attempts}</h1>
       {word && displayWordAsDashes()}
       <div className="sm:w-3/4">{displayKeyboard()}</div>
+      {gameEnded && (
+        <>
+          <p>{gameOverMsg}</p>
+          <button onClick={() => reset()}>
+            Play again with word from: {category}
+          </button>
+          <button onClick={() => navigate("/")}>Choose new category</button>
+        </>
+      )}
     </div>
   );
 }
