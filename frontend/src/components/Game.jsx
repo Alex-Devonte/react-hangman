@@ -2,7 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import HangmanService from "../HangmanService";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 function Game() {
   const defaultAttempts = 8;
@@ -15,7 +15,6 @@ function Game() {
   const [gameEnded, setGameEnded] = useState(false);
   const [gameOverMsg, setGameOverMsg] = useState("");
 
-  const topic = searchParams.get("topic");
   const category = searchParams.get("category");
   const navigate = useNavigate();
 
@@ -66,9 +65,9 @@ function Game() {
 
   const displayWordAsDashes = () => {
     return (
-      <div className="flex justify-center gap-3 border p-2 md:w-3/4  lg:w-1/3">
+      <div className="flex w-11/12 flex-wrap justify-center gap-3 border p-2 md:w-3/4 md:gap-5 lg:w-1/3">
         {dashes.map((dash, index) => (
-          <p className="text-3xl font-bold" key={index}>
+          <p className="text-3xl font-bold md:text-4xl" key={index}>
             {dash}
           </p>
         ))}
@@ -139,7 +138,7 @@ function Game() {
     if (gameWon) {
       setGameOverMsg("Congrats! You win!");
     } else {
-      setGameOverMsg("You lost");
+      setGameOverMsg("You lost!");
       //Show the completed word
       setDashes(word);
     }
@@ -159,19 +158,40 @@ function Game() {
 
   return (
     <div className="flex flex-col items-center">
-      <h1>Topic: {topic}</h1>
-      <h1>Category: {category}</h1>
-      <h1>Attempts Left: {attempts}</h1>
+      <div className="mb-5 w-full bg-sky-950 p-5 text-sky-50">
+        <Link
+          to="/"
+          className="text-3xl font-bold text-sky-50 hover:text-sky-200"
+        >
+          React Hangman
+        </Link>
+      </div>
+      <div className="mb-5 text-center">
+        <p className="mb-2 text-xl">
+          Attempts Left: <span className="font-bold">{attempts}</span>
+        </p>
+        <h3 className="bg-sky-200 p-2 text-xl font-bold text-sky-950">
+          {category}
+        </h3>
+      </div>
       {word && displayWordAsDashes()}
-      <div className="sm:w-3/4">{displayKeyboard()}</div>
+      <div className="mt-5 sm:w-3/4">{displayKeyboard()}</div>
       {gameEnded && (
-        <>
-          <p>{gameOverMsg}</p>
-          <button onClick={() => reset()}>
+        <div className="my-10 flex flex-col items-center gap-5 rounded-xl bg-sky-950 p-10 text-sky-50 shadow-2xl">
+          <p className="text-2xl font-bold">{gameOverMsg}</p>
+          <button
+            className="w-full rounded-md bg-sky-200 p-3 font-bold text-sky-950 shadow-md transition duration-100 hover:bg-sky-800 hover:text-sky-50 active:bg-sky-500 disabled:opacity-55 disabled:hover:bg-sky-200 disabled:hover:text-black md:col-auto"
+            onClick={() => reset()}
+          >
             Play again with word from: {category}
           </button>
-          <button onClick={() => navigate("/")}>Choose new category</button>
-        </>
+          <button
+            className="w-full rounded-md bg-sky-200 p-3 font-bold text-sky-950 shadow-md transition duration-100 hover:bg-sky-800 hover:text-sky-50 active:bg-sky-500 disabled:opacity-55 disabled:hover:bg-sky-200 disabled:hover:text-black md:col-auto"
+            onClick={() => navigate("/")}
+          >
+            Choose new category
+          </button>
+        </div>
       )}
     </div>
   );
