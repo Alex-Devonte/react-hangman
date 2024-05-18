@@ -3,12 +3,18 @@ import dotenv from "dotenv";
 const { Pool } = pg;
 dotenv.config();
 
-const pool = new Pool({
-  user: process.env.PG_USER,
-  host: process.env.PG_HOST,
-  database: process.env.PG_DATABASE,
-  password: process.env.PG_PASSWORD,
-});
+let pool;
+
+if (process.env.NODE_ENV === "production") {
+  pool = new Pool({ connectionString: process.env.CONNECTION_STRING });
+} else {
+  pool = new Pool({
+    user: process.env.PG_USER,
+    host: process.env.PG_HOST,
+    database: process.env.PG_DATABASE,
+    password: process.env.PG_PASSWORD,
+  });
+}
 
 async function getTopics() {
   const client = await pool.connect();
