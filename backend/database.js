@@ -1,19 +1,23 @@
-import mysql from "mysql2";
+import pg from "pg";
 import dotenv from "dotenv";
+const { Pool } = pg;
 dotenv.config();
 
-const pool = mysql
-  .createPool({
-    host: process.env.MYSQL_HOST,
-    user: process.env.MYSQL_USER,
-    password: process.env.MYSQL_PASSWORD,
-    database: process.env.MYSQL_DATABASE,
-  })
-  .promise();
+const pool = new Pool({
+  user: process.env.PG_USER,
+  host: process.env.PG_HOST,
+  database: process.env.PG_DATABASE,
+  password: process.env.PG_PASSWORD,
+});
 
 async function getTopics() {
-  const [rows] = await pool.query("SELECT DISTINCT topic FROM topics");
-  return rows;
+  const client = await pool.connect();
+  try {
+    const { rows } = await client.query("SELECT DISTINCT topic FROM topics");
+    return rows;
+  } finally {
+    client.release();
+  }
 }
 
 async function getCategories(topics) {
@@ -21,21 +25,20 @@ async function getCategories(topics) {
 
   await Promise.all(
     topics.map(async (row) => {
-      const [rows] = await pool.query(
-        "SELECT category FROM categories WHERE topic_id = (SELECT id FROM topics WHERE topic = ?)",
-        [row.topic],
-      );
-
-      //Extract the categories from the object
-      const categories = rows.map((row) => row.category);
-
-      //Create new object for data array
-      const newObj = {
-        topic: row.topic,
-        categories: categories,
-      };
-
-      categoryData.push(newObj);
+      const client = await pool.connect();
+      try {
+        const { rows } = await client.query(
+          "SELECT category FROM categories WHERE topic_id = (SELECT id FROM topics WHERE topic = $1)",
+          [row.topic],
+        );
+        const categories = rows.map((row) => row.category);
+        categoryData.push({
+          topic: row.topic,
+          categories: categories,
+        });
+      } finally {
+        client.release();
+      }
     }),
   );
 
@@ -49,11 +52,16 @@ async function getTopicsAndCategories() {
 }
 
 async function getWordFromCategory(category) {
-  const [rows] = await pool.query(
-    "SELECT word FROM words INNER JOIN categories ON words.category_id = categories.id WHERE category = ? ORDER BY RAND() LIMIT 1;",
-    [category],
-  );
-  return rows[0].word;
+  const client = await pool.connect();
+  try {
+    const { rows } = await client.query(
+      "SELECT word FROM words INNER JOIN categories ON words.category_id = categories.id WHERE category = $1 ORDER BY RANDOM() LIMIT 1;",
+      [category],
+    );
+    return rows[0].word;
+  } finally {
+    client.release();
+  }
 }
 
 export const db = { getTopicsAndCategories, getWordFromCategory };
