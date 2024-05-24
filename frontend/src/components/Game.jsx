@@ -81,11 +81,11 @@ function Game() {
       .split("");
 
     return (
-      <div className="grid grid-cols-7 justify-items-center gap-2 p-2 md:mx-auto md:grid-cols-10 md:gap-4 lg:w-1/3">
+      <div className="grid grid-cols-7 justify-items-center gap-2 p-2 md:mx-auto md:w-full md:grid-cols-10 md:gap-5 lg:w-3/4 xl:w-1/2">
         {alphabet.map((letter, index) => (
           <div
             key={index}
-            className={`flex w-10 cursor-pointer items-center justify-center rounded-md border border-sky-950 bg-sky-200 p-3 shadow-md transition duration-75 hover:bg-sky-100 md:w-auto md:p-5 ${
+            className={`flex w-auto cursor-pointer items-center justify-center rounded-md border border-sky-950 bg-sky-200 p-4 shadow-md transition duration-75 hover:bg-sky-100 sm:p-5  ${
               clickedLetters.includes(letter) || gameEnded
                 ? "cursor-default bg-sky-950 text-sky-50 line-through opacity-40 hover:bg-sky-950"
                 : ""
@@ -175,7 +175,7 @@ function Game() {
         </h3>
       </div>
       {word && displayWordAsDashes()}
-      <div className="mt-5 sm:w-3/4">{displayKeyboard()}</div>
+      <div className="mt-5 sm:w-3/4 md:w-10/12">{displayKeyboard()}</div>
       {gameEnded && (
         <div className="my-10 flex flex-col items-center gap-5 rounded-xl bg-sky-950 p-10 text-sky-50 shadow-2xl">
           <p className="text-2xl font-bold">{gameOverMsg}</p>
