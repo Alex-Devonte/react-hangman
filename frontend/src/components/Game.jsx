@@ -64,13 +64,44 @@ function Game() {
   }, [dashes, word, attempts, gameEnded]);
 
   const displayWordAsDashes = () => {
+    // Group characters into words by checking for spaces to help with layout
+    const wordGroups = [];
+    let currentWord = [];
+
+    dashes.forEach((char) => {
+      if (char === " ") {
+        if (currentWord.length) {
+          wordGroups.push(currentWord);
+        }
+        wordGroups.push([" "]);
+        currentWord = [];
+      } else {
+        currentWord.push(char);
+      }
+    });
+
+    if (currentWord.length) {
+      wordGroups.push(currentWord);
+    }
+
     return (
-      <div className="flex w-11/12 flex-wrap justify-center gap-3 border p-2 md:w-3/4 md:gap-5 lg:w-1/3">
-        {dashes.map((dash, index) => (
-          <p className="text-3xl font-bold md:text-4xl" key={index}>
-            {dash}
-          </p>
-        ))}
+      <div className="flex w-11/12 flex-wrap justify-center gap-y-4 border p-2 md:w-3/4 lg:w-1/3">
+        {wordGroups.map((group, groupIndex) =>
+          group[0] === " " ? (
+            <div key={groupIndex} className="w-6 md:w-12" />
+          ) : (
+            <div key={groupIndex} className="flex gap-3 md:gap-5">
+              {group.map((char, charIndex) => (
+                <p
+                  key={`${groupIndex}-${charIndex}`}
+                  className="text-3xl font-bold md:text-4xl"
+                >
+                  {char}
+                </p>
+              ))}
+            </div>
+          ),
+        )}
       </div>
     );
   };
@@ -81,7 +112,7 @@ function Game() {
       .split("");
 
     return (
-      <div className="grid grid-cols-7 justify-items-center gap-2 p-2 md:mx-auto md:w-full md:grid-cols-10 md:gap-5 lg:w-3/4 xl:w-1/2">
+      <div className="grid grid-cols-7 justify-items-center gap-2 p-2 md:mx-auto md:w-full md:grid-cols-10 md:gap-5 lg:w-3/4 xl:w-1/3">
         {alphabet.map((letter, index) => (
           <div
             key={index}
