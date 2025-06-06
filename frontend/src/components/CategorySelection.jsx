@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import HangmanService from "../HangmanService";
 import { useNavigate } from "react-router-dom";
+import HangmanFigure from "./HangmanFigure";
 
 function CategorySelection() {
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -52,9 +53,8 @@ function CategorySelection() {
   return (
     <>
       <div className="mt-16 p-5 text-center">
-        <h1 className="mb-16 text-6xl md:text-7xl lg:text-8xl">
-          Welcome to Hangman
-        </h1>
+        <HangmanFigure wrongGuesses={6} />
+        <h1 className="mb-16 text-6xl md:text-7xl lg:text-8xl">Hangman</h1>
       </div>
 
       <div className="grid grid-cols-1 p-2 md:mx-auto md:w-1/3">
