@@ -3,9 +3,10 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import HangmanService from "../HangmanService";
 import { useNavigate, Link } from "react-router-dom";
+import HangmanFigure from "./HangmanFigure";
 
 function Game() {
-  const defaultAttempts = 8;
+  const defaultAttempts = 6;
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [clickedLetters, setClickedLetters] = useState([]);
@@ -198,9 +199,9 @@ function Game() {
         </Link>
       </div>
       <div className="mb-5 text-center">
-        <p className="mb-2 text-xl">
-          Attempts Left: <span className="font-bold">{attempts}</span>
-        </p>
+        <div className="mb-2">
+          <HangmanFigure wrongGuesses={defaultAttempts - attempts} />
+        </div>
         <h3 className="bg-sky-200 p-2 text-xl font-bold text-sky-950">
           {category}
         </h3>
